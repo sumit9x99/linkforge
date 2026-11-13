@@ -172,7 +172,24 @@ export default function BioPagesBuilder() {
               </button>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div>
+                <label className="mb-1 block text-xs text-[var(--muted)]">Custom Slug (/p/…)</label>
+                <div className="flex items-center rounded-lg border bg-[var(--bg)] px-2.5 py-2 font-mono text-xs">
+                  <span className="text-[var(--muted)]">/p/</span>
+                  <input
+                    value={selected.slug}
+                    onChange={(e) =>
+                      setSelected({
+                        ...selected,
+                        slug: e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""),
+                      })
+                    }
+                    placeholder="vip"
+                    className="w-full bg-transparent font-mono text-xs focus:outline-none"
+                  />
+                </div>
+              </div>
               <div>
                 <label className="mb-1 block text-xs text-[var(--muted)]">Display Title</label>
                 <input

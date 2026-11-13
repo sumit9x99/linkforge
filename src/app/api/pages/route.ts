@@ -66,24 +66,36 @@ export async function PATCH(req: NextRequest) {
   const body = await req.json();
   const db = getDb();
   if (!body.id) return NextResponse.json({ error: "id required" }, { status: 400 });
-  await db.run(
-    `UPDATE bio_pages SET
-      title = COALESCE(?, title),
-      bio = COALESCE(?, bio),
-      avatar_text = COALESCE(?, avatar_text),
-      theme_json = COALESCE(?, theme_json),
-      blocks_json = COALESCE(?, blocks_json)
-     WHERE id = ?`,
-    [
-      body.title ?? null,
-      body.bio ?? null,
-      body.avatarText ?? null,
-      body.theme ? JSON.stringify(body.theme) : null,
-      body.blocks ? JSON.stringify(body.blocks) : null,
-      body.id,
-    ]
-  );
-  return NextResponse.json({ ok: true });
+
+  const rawSlug = body.slug ? String(body.slug).trim().toLowerCase().replace(/[^a-z0-9_-]/g, "") : null;
+
+  try {
+    await db.run(
+      `UPDATE bio_pages SET
+        slug = COALESCE(?, slug),
+        title = COALESCE(?, title),
+        bio = COALESCE(?, bio),
+        avatar_text = COALESCE(?, avatar_text),
+        theme_json = COALESCE(?, theme_json),
+        blocks_json = COALESCE(?, blocks_json)
+       WHERE id = ?`,
+      [
+        rawSlug,
+        body.title ?? null,
+        body.bio ?? null,
+        body.avatarText ?? null,
+        body.theme ? JSON.stringify(body.theme) : null,
+        body.blocks ? JSON.stringify(body.blocks) : null,
+        body.id,
+      ]
+    );
+    return NextResponse.json({ ok: true, slug: rawSlug });
+  } catch (err) {
+    return NextResponse.json(
+      { error: err instanceof Error && err.message.includes("unique") ? "Slug already in use" : "Failed to update page" },
+      { status: 409 }
+    );
+  }
 }
 
 export async function DELETE(req: NextRequest) {
